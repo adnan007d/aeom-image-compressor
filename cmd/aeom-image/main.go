@@ -17,6 +17,10 @@ func renderTempl(c *fiber.Ctx, component templ.Component) error {
 func main() {
 	app := fiber.New()
 
+
+  app.Static("/css", "dist/css")
+  app.Static("/js", "dist/js")
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		component := views.Index("wtf")
 		return renderTempl(c, component)
