@@ -2,6 +2,13 @@ package views
 
 templ Index(name string) {
 	@base() {
-		<p>Hello, { name } </p>
+		<div class="mx-auto mt-10 w-max" hx-target="#results">
+			<form hx-post="/images" hx-encoding="multipart/form-data">
+				<input type="file" name="images" multiple id="images"/>
+				<button type="submit">Upload</button>
+			</form>
+			<div id="files"></div>
+			<div id="results"></div>
+		</div>
 	}
 }
