@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/a-h/templ"
-	"github.com/adnan007d/aeom-image/internals/views"
+	"github.com/adnan007d/aeom-image-compressor/internals/views"
 	"github.com/gofiber/fiber/v2"
 )
 
