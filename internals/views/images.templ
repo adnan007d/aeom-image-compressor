@@ -1,0 +1,11 @@
+package views
+
+type ImagesType struct {
+	Src string
+}
+
+templ CompressedImages(images []ImagesType) {
+	for _, image := range images {
+		<img src={ image.Src }/>
+	}
+}

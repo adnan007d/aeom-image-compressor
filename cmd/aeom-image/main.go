@@ -1,11 +1,15 @@
 package main
 
 import (
+	"io"
+	"io/fs"
 	"log"
+	"os"
 
 	"github.com/a-h/templ"
 	"github.com/adnan007d/aeom-image-compressor/internals/views"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 )
 
 func renderTempl(c *fiber.Ctx, component templ.Component) error {
@@ -15,27 +19,56 @@ func renderTempl(c *fiber.Ctx, component templ.Component) error {
 }
 
 func main() {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+    BodyLimit: 50 *1024 * 1024,
+  })
 
 	app.Static("/css", "dist/css")
 	app.Static("/js", "dist/js")
+	app.Static("/images", "images")
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		component := views.Index("wtf")
 		return renderTempl(c, component)
 	})
 
-	app.Post("/images", func(c *fiber.Ctx) error {
+	app.Post("/upload", func(c *fiber.Ctx) error {
 		files, err := c.MultipartForm()
 		if err != nil {
 			log.Printf("Error while decoding multiplat form: %v", err)
 		}
-		for _, file := range files.File["images"] {
-			log.Println(file.Filename)
 
+		var dir = "images/" + uuid.New().String()
+
+		os.MkdirAll(dir, fs.ModePerm)
+
+		hell := make([]views.ImagesType, len(files.File))
+
+		for _, file := range files.File["images"] {
+			out, err := os.Create(dir + "/" + file.Filename)
+			if err != nil {
+				log.Printf("Error while creating %s: %v", file.Filename, err)
+			}
+			defer out.Close()
+
+			infile, err := file.Open()
+			if err != nil {
+				log.Printf("Error while opening infile %s: %v", file.Filename, err)
+			}
+			defer infile.Close()
+
+			io.Copy(out, infile)
+			hell = append(hell, views.ImagesType{
+				Src: dir + "/" + file.Filename,
+			})
+			log.Println(file.Filename)
 		}
 
-		return nil
+		component := views.CompressedImages(hell)
+
+
+		return renderTempl(c, component)
+
 	})
 
 	log.Fatal(app.Listen(":6969"))
