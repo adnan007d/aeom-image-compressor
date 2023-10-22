@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"image"
 	"io"
 	"io/fs"
@@ -114,23 +115,20 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 	}
 	defer openedFile.Close()
 
-	// Writing to disk
-	// io.Copy(out, openedFile)
-	//  out.Close()
-	// openedFile.Close()
-	//
-	//  out.Sync()
-	//  fileInfo, _ := out.Stat()
-	//  log.Printf("%v", fileInfo)
+	var inMemoryImage bytes.Buffer
+
+	multiWriter := io.MultiWriter(&inMemoryImage, out)
+
+	io.Copy(multiWriter, openedFile)
 
 	// Decoding Image to standard format
-	decodedImage, iType, err := image.Decode(openedFile)
+	decodedImage, _, err := image.Decode(&inMemoryImage)
 	if err != nil {
 		log.Printf("Error decoding image %s: %v", originalFileName, err)
 		return
 	}
 
-	log.Printf("%v is %v", originalFileName, iType)
+	// log.Printf("%v is %v", originalFileName, iType)
 
 	decodedOutFile, err := os.Create(compressedFileName)
 	if err != nil {
