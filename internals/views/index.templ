@@ -5,6 +5,7 @@ templ Index(name string) {
 		<div class="mx-auto mt-10 w-max" hx-target="#results">
 			<form hx-post="/upload" hx-encoding="multipart/form-data">
 				<input type="file" name="images" multiple id="images"/>
+				<input type="number" name="quality" min="0" max="100" value="75"/>
 				<button type="submit">Upload</button>
 			</form>
 			<div id="files"></div>

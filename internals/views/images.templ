@@ -1,11 +1,17 @@
 package views
 
-type ImagesType struct {
+type ImageType struct {
 	Src string
 }
 
-templ CompressedImages(images []ImagesType) {
+type CompressedImagesType struct {
+	Source ImageType
+	Dest   ImageType
+}
+
+templ CompressedImages(images []CompressedImagesType) {
 	for _, image := range images {
-		<img src={ image.Src }/>
+		<img src={ image.Source.Src }/>
+		<img src={ image.Dest.Src }/>
 	}
 }
