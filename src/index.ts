@@ -30,11 +30,11 @@ function onQualityChange() {
 function kbToMB(n: number): string {
   let ret: number;
   let suffix: string;
-  if (n < 1e5) {
+  if (n < 1e6) {
     ret = n / 1e3;
     suffix = "KB";
   } else {
-    ret = n / 1e5;
+    ret = n / 1e6;
     suffix = "MB";
   }
   return ret.toFixed(2) + suffix;

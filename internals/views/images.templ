@@ -1,7 +1,11 @@
 package views
 
+import "fmt"
+
 type ImageType struct {
-	Src string
+	Src  string
+	Size int
+	Name string
 }
 
 type CompressedImagesType struct {
@@ -9,15 +13,31 @@ type CompressedImagesType struct {
 	Dest   ImageType
 }
 
+func kbToMB(n int) string {
+	var literal string
+	switch {
+	case n < 1e6:
+		kb := float64(n) / 1e3
+		literal = fmt.Sprintf("%.2fKB", kb)
+		break
+	default:
+		mb := float64(n) / 1e6
+		literal = fmt.Sprintf("%.2fMb", mb)
+		break
+	}
+
+	return literal
+}
+
 templ CompressedImages(images []CompressedImagesType) {
 	for _, image := range images {
-		<two-up class="max-w-7xl">
+		<two-up class="max-w-7xl" style="--split-point: 0px;">
 			<div class="relative">
-				<span class="absolute left-2 top-2">Original</span>
+				<span class="absolute left-2 top-2">Original { kbToMB(image.Source.Size) } - { image.Source.Name }</span>
 				<img src={ image.Source.Src }/>
 			</div>
 			<div class="relative">
-				<span class="absolute left-2 top-2">New</span>
+				<span class="absolute left-2 top-2">New { kbToMB(image.Dest.Size) } - { image.Dest.Name }</span>
 				<img src={ image.Dest.Src }/>
 			</div>
 		</two-up>

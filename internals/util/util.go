@@ -8,12 +8,12 @@ import (
 	"log"
 	"mime/multipart"
 	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/adnan007d/aeom-image-compressor/internals/views"
 	"github.com/tidbyt/go-libwebp/webp"
 )
-
 
 type CompressImageParams struct {
 	File                   *multipart.FileHeader
@@ -28,8 +28,9 @@ type CompressedImageOptions struct {
 
 func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, params CompressImageParams) {
 	defer wg.Done()
+	baseFileName := params.File.Filename[:len(params.File.Filename)-len(filepath.Ext(params.File.Filename))]
 	originalFileName := params.Dir + "/original/" + params.File.Filename
-	compressedFileName := params.Dir + "/compressed/" + params.File.Filename + "." + params.CompressedImageOptions.ImageType
+	compressedFileName := params.Dir + "/compressed/" + baseFileName + "." + params.CompressedImageOptions.ImageType
 
 	out, err := os.Create(originalFileName)
 	if err != nil {
@@ -45,8 +46,8 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 	}
 	defer openedFile.Close()
 
-  // NOTE: Maybe omit in memory and use the freshly written file?
-  // Creating a writer to write to make a copy in memory of the image and write to disk
+	// NOTE: Maybe omit in memory and use the freshly written file?
+	// Creating a writer to write to make a copy in memory of the image and write to disk
 	var inMemoryImage bytes.Buffer
 	multiWriter := io.MultiWriter(&inMemoryImage, out)
 	io.Copy(multiWriter, openedFile)
@@ -79,9 +80,14 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 		log.Printf("Error while encoding image %s: %v", compressedFileName, convertError)
 	}
 
+	outFileStat, err := decodedOutFile.Stat()
+	if err != nil {
+		log.Printf("Error while reading file stat for %v: %v", decodedOutFile.Name(), err)
+	}
+
 	images <- views.CompressedImagesType{
-		Source: views.ImageType{Src: originalFileName},
-		Dest:   views.ImageType{Src: compressedFileName},
+		Source: views.ImageType{Src: originalFileName, Size: int(params.File.Size), Name: params.File.Filename},
+		Dest:   views.ImageType{Src: compressedFileName, Size: int(outFileStat.Size()), Name: outFileStat.Name()},
 	}
 }
 
