@@ -30,6 +30,7 @@ templ Index(name string) {
  						id="quality"
  						min="0"
  						max="100"
+            name="quality"
  						value="75"
  						type="range"
  						required
@@ -45,6 +46,7 @@ templ Index(name string) {
 					<input
  						class="flex h-10 w-full rounded-md bg-transparent border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
  						id="width"
+            name="width"
  						type="number"
 					/>
 					<p class="text-sm text-gray-500 dark:text-gray-400">Size will be maintained if not specified</p>
@@ -68,7 +70,7 @@ templ Index(name string) {
  								type="radio"
  								value="webp"
  								id="format-webp"
- 								name="output-format"
+ 								name="format"
 							/>
 							WebP
 						</label>
@@ -80,7 +82,7 @@ templ Index(name string) {
  								type="radio"
  								value="jpeg"
  								id="format-jpeg"
- 								name="output-format"
+ 								name="format"
 							/>
 							JPEG
 						</label>
@@ -92,15 +94,15 @@ templ Index(name string) {
  								type="radio"
  								value="png"
  								id="format-png"
- 								name="output-format"
+ 								name="format"
 							/>
 							PNG
 						</label>
 					</div>
 				</div>
-				<button type="submit">Upload</button>
+				<button type="submit" class="px-4 py-2 bg-white rounded-lg text-black font-semibold w-full"> Upload</button>
 			</form>
-			<div id="files"></div>
+			<ul id="files" class="my-5 border p-3 max-h-96 overflow-auto"></ul>
 			<div id="results"></div>
 		</div>
 	}
