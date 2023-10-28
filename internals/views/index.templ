@@ -17,6 +17,7 @@ templ Index(name string) {
  						multiple=""
  						type="file"
  						name="images"
+            accept="image/png, image/jpeg, image/webp"
  						required
 					/>
 				</div>
@@ -33,6 +34,69 @@ templ Index(name string) {
  						type="range"
  						required
 					/>
+				</div>
+				<div class="space-y-4">
+					<label
+ 						class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base text-gray-900 dark:text-gray-100"
+ 						for="width"
+					>
+						Width
+					</label>
+					<input
+ 						class="flex h-10 w-full rounded-md bg-transparent border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+ 						id="width"
+ 						type="number"
+					/>
+					<p class="text-sm text-gray-500 dark:text-gray-400">Size will be maintained if not specified</p>
+				</div>
+				<div class="space-y-4">
+					<label
+ 						class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base text-gray-900 dark:text-gray-100"
+ 						for="format"
+					>
+						Output Format
+					</label>
+					<div
+ 						class="flex items-center gap-2"
+ 						id="format"
+					>
+						<label
+ 							class="text-sm font-medium cursor-pointer rounded-md p-2 leading-none border"
+ 							for="format-webp"
+						>
+							<input
+ 								type="radio"
+ 								value="webp"
+ 								id="format-webp"
+ 								name="output-format"
+							/>
+							WebP
+						</label>
+						<label
+ 							class="text-sm font-medium cursor-pointer rounded-md p-2 leading-none border"
+ 							for="format-jpeg"
+						>
+							<input
+ 								type="radio"
+ 								value="jpeg"
+ 								id="format-jpeg"
+ 								name="output-format"
+							/>
+							JPEG
+						</label>
+						<label
+ 							class="text-sm font-medium cursor-pointer rounded-md p-2 leading-none border"
+ 							for="format-png"
+						>
+							<input
+ 								type="radio"
+ 								value="png"
+ 								id="format-png"
+ 								name="output-format"
+							/>
+							PNG
+						</label>
+					</div>
 				</div>
 				<button type="submit">Upload</button>
 			</form>
