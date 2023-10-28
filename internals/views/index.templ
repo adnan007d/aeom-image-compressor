@@ -2,10 +2,38 @@ package views
 
 templ Index(name string) {
 	@base() {
-		<div class="mx-auto mt-10 w-max" hx-target="#results">
-			<form hx-post="/upload" hx-encoding="multipart/form-data">
-				<input type="file" name="images" multiple id="images"/>
-				<input type="number" name="quality" min="0" max="100" value="75"/>
+		<div class="mx-auto mt-10 p-6 max-w-7xl" hx-target="#results">
+			<form hx-post="/upload" hx-encoding="multipart/form-data" class="space-y-6">
+				<div class="space-y-4">
+					<label
+ 						class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base"
+ 						for="images"
+					>
+						Upload Images (JPEG, WebP, PNG)
+					</label>
+					<input
+ 						class="flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm text-white file:border-0 file:bg-transparent file:text-white file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+ 						id="images"
+ 						multiple=""
+ 						type="file"
+ 						name="images"
+ 						required
+					/>
+				</div>
+				<div class="space-y-4">
+					<label class="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base" for="quality">
+						Quality <span id="quality-indicator"></span>
+					</label>
+					<input
+ 						class="flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+ 						id="quality"
+ 						min="0"
+ 						max="100"
+ 						value="75"
+ 						type="range"
+ 						required
+					/>
+				</div>
 				<button type="submit">Upload</button>
 			</form>
 			<div id="files"></div>
