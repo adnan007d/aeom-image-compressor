@@ -1,6 +1,9 @@
 package views
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type ImageType struct {
 	Src  string
@@ -11,6 +14,7 @@ type ImageType struct {
 type CompressedImagesType struct {
 	Source ImageType
 	Dest   ImageType
+	Width  int
 }
 
 func kbToMB(n int) string {
@@ -31,14 +35,14 @@ func kbToMB(n int) string {
 
 templ CompressedImages(images []CompressedImagesType) {
 	for _, image := range images {
-		<two-up class="max-w-7xl" style="--split-point: 0px;">
+		<two-up class="max-w-7xl w-max">
 			<div class="relative">
 				<span class="absolute left-2 top-2">Original { kbToMB(image.Source.Size) } - { image.Source.Name }</span>
-				<img src={ image.Source.Src }/>
+				<img width={ strconv.Itoa(image.Width) } src={ image.Source.Src }/>
 			</div>
 			<div class="relative">
 				<span class="absolute left-2 top-2">New { kbToMB(image.Dest.Size) } - { image.Dest.Name }</span>
-				<img src={ image.Dest.Src }/>
+				<img width={ strconv.Itoa(image.Width) } src={ image.Dest.Src }/>
 			</div>
 		</two-up>
 	}

@@ -36,7 +36,7 @@ func CompressImages(c *fiber.Ctx) error {
 		log.Printf("Error while decoding multiplat form: %v", err)
 	}
   
-  formData := parseFormdata(form)
+  formData := extractFormdata(form)
 
 	randomUUID := uuid.New().String()
 	var dir = "images/" + randomUUID
@@ -79,7 +79,7 @@ type FormData struct {
 	format  string
 }
 
-func parseFormdata(form *multipart.Form) FormData {
+func extractFormdata(form *multipart.Form) FormData {
 	formData := FormData{
 		quality: 75,
 		width:   0,

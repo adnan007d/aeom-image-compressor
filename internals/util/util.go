@@ -3,7 +3,7 @@ package util
 import (
 	"bytes"
 	"image"
-	"image/draw"
+	// "image/draw"
 	"io"
 	"log"
 	"mime/multipart"
@@ -13,6 +13,7 @@ import (
 
 	"github.com/adnan007d/aeom-image-compressor/internals/views"
 	"github.com/tidbyt/go-libwebp/webp"
+	"golang.org/x/image/draw"
 )
 
 type CompressImageParams struct {
@@ -86,16 +87,34 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 		log.Printf("Error while reading file stat for %v: %v", decodedOutFile.Name(), err)
 	}
 
+	width := decodedImage.Bounds().Max.X
+
+	if params.CompressedImageOptions.Width > 0 {
+		width = params.CompressedImageOptions.Width
+	}
+
 	images <- views.CompressedImagesType{
 		Source: views.ImageType{Src: originalFileName, Size: int(params.File.Size), Name: params.File.Filename},
 		Dest:   views.ImageType{Src: compressedFileName, Size: int(outFileStat.Size()), Name: outFileStat.Name()},
+		Width:  width,
 	}
 }
 
 func ConvertToWebp(w io.Writer, srcImage image.Image, options CompressedImageOptions) error {
-	newImage := image.NewRGBA(srcImage.Bounds())
+	bounds := srcImage.Bounds()
 
-	draw.Draw(newImage, srcImage.Bounds(), srcImage, srcImage.Bounds().Min, draw.Src)
+	if options.Width > 0 {
+		// normal math to calculate the new height using to keep the same aspect ratio w1/h1 = w2/h2
+		newHeight := (options.Width * srcImage.Bounds().Max.Y) / srcImage.Bounds().Max.X
+		bounds = image.Rectangle{
+
+			Min: image.Point{0, 0},
+			Max: image.Point{X: options.Width, Y: newHeight},
+		}
+	}
+
+	newImage := image.NewRGBA(bounds)
+	draw.ApproxBiLinear.Scale(newImage, bounds, srcImage, srcImage.Bounds(), draw.Src, nil)
 
 	config, err := webp.ConfigPreset(webp.PresetDefault, options.Quality)
 	if err != nil {
