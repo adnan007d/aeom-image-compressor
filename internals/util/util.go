@@ -24,6 +24,7 @@ type CompressImageParams struct {
 type CompressedImageOptions struct {
 	Quality   float32
 	ImageType string
+	Width     int
 }
 
 func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, params CompressImageParams) {

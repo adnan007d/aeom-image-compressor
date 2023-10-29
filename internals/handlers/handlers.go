@@ -3,9 +3,13 @@ package handlers
 import (
 	"io/fs"
 	"log"
+	"mime/multipart"
 	"os"
 	"strconv"
 	"sync"
+
+	_ "image/jpeg"
+	_ "image/png"
 
 	"github.com/a-h/templ"
 	"github.com/adnan007d/aeom-image-compressor/internals/util"
@@ -13,8 +17,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	_ "golang.org/x/image/webp"
-	_ "image/jpeg"
-	_ "image/png"
 )
 
 func renderTempl(c *fiber.Ctx, component templ.Component) error {
@@ -33,13 +35,8 @@ func CompressImages(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("Error while decoding multiplat form: %v", err)
 	}
-
-	parsedQuality, err := strconv.ParseFloat(form.Value["quality"][0], 32)
-
-	if err != nil {
-		log.Printf("Error while decoding quality %v: %v", form.Value["quality"], err)
-	}
-	quality := float32(parsedQuality)
+  
+  formData := parseFormdata(form)
 
 	randomUUID := uuid.New().String()
 	var dir = "images/" + randomUUID
@@ -56,8 +53,9 @@ func CompressImages(c *fiber.Ctx) error {
 			File: file,
 			Dir:  dir,
 			CompressedImageOptions: util.CompressedImageOptions{
-				Quality:   quality,
-				ImageType: "webp",
+				Quality:   formData.quality,
+				ImageType: formData.format,
+        Width: formData.width,
 			},
 		})
 
@@ -73,4 +71,38 @@ func CompressImages(c *fiber.Ctx) error {
 
 	component := views.CompressedImages(images)
 	return renderTempl(c, component)
+}
+
+type FormData struct {
+	quality float32
+	width   int
+	format  string
+}
+
+func parseFormdata(form *multipart.Form) FormData {
+	formData := FormData{
+		quality: 75,
+		width:   0,
+		format:  "webp",
+	}
+	if len(form.Value["quality"]) > 0 {
+		quality, err := strconv.ParseFloat(form.Value["quality"][0], 32)
+		// if there is error the default value will be used
+		if err == nil {
+			formData.quality = float32(quality)
+		}
+	}
+
+	if len(form.Value["width"]) > 0 {
+		width, err := strconv.ParseInt(form.Value["width"][0], 10, 64)
+		if err == nil {
+			formData.width = int(width)
+		}
+	}
+
+	if len(form.Value["format"]) > 0 && (form.Value["format"][0] == "webp" || form.Value["format"][0] == "jpeg" || form.Value["format"][0] == "png") {
+		formData.format = form.Value["format"][0]
+	}
+
+	return formData
 }
