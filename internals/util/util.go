@@ -3,6 +3,9 @@ package util
 import (
 	"bytes"
 	"image"
+	"image/jpeg"
+	"image/png"
+
 	// "image/draw"
 	"io"
 	"log"
@@ -68,14 +71,32 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 	}
 	defer decodedOutFile.Close()
 
+	bounds := decodedImage.Bounds()
+
+	if params.CompressedImageOptions.Width > 0 {
+		// normal math to calculate the new height using to keep the same aspect ratio w1/h1 = w2/h2
+		newHeight := (params.CompressedImageOptions.Width * decodedImage.Bounds().Max.Y) / decodedImage.Bounds().Max.X
+		bounds = image.Rectangle{
+
+			Min: image.Point{0, 0},
+			Max: image.Point{X: params.CompressedImageOptions.Width, Y: newHeight},
+		}
+	}
+
+	newImage := image.NewRGBA(bounds)
+	draw.ApproxBiLinear.Scale(newImage, bounds, decodedImage, decodedImage.Bounds(), draw.Src, nil)
+
 	var convertError error = nil
 
 	switch params.CompressedImageOptions.ImageType {
+	case "png":
+		convertError = ConvertToPng(decodedOutFile, newImage)
+	case "jpg":
+		convertError = ConvertToJpg(decodedOutFile, newImage, params.CompressedImageOptions)
 	case "webp":
-		convertError = ConvertToWebp(decodedOutFile, decodedImage, params.CompressedImageOptions)
-
+		fallthrough
 	default:
-		log.Println("File Not supported")
+		convertError = ConvertToWebp(decodedOutFile, newImage, params.CompressedImageOptions)
 	}
 
 	if convertError != nil {
@@ -101,29 +122,34 @@ func CompressImage(wg *sync.WaitGroup, images chan views.CompressedImagesType, p
 }
 
 func ConvertToWebp(w io.Writer, srcImage image.Image, options CompressedImageOptions) error {
-	bounds := srcImage.Bounds()
-
-	if options.Width > 0 {
-		// normal math to calculate the new height using to keep the same aspect ratio w1/h1 = w2/h2
-		newHeight := (options.Width * srcImage.Bounds().Max.Y) / srcImage.Bounds().Max.X
-		bounds = image.Rectangle{
-
-			Min: image.Point{0, 0},
-			Max: image.Point{X: options.Width, Y: newHeight},
-		}
-	}
-
-	newImage := image.NewRGBA(bounds)
-	draw.ApproxBiLinear.Scale(newImage, bounds, srcImage, srcImage.Bounds(), draw.Src, nil)
-
 	config, err := webp.ConfigPreset(webp.PresetDefault, options.Quality)
 	if err != nil {
 		return err
 	}
 
-	err = webp.EncodeRGBA(w, newImage, config)
+	err = webp.EncodeRGBA(w, srcImage, config)
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func ConvertToJpg(w io.Writer, srcImage image.Image, options CompressedImageOptions) error {
+	err := jpeg.Encode(w, srcImage, &jpeg.Options{
+		Quality: int(options.Quality),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ConvertToPng(w io.Writer, srcImage image.Image) error {
+	err := png.Encode(w, srcImage)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

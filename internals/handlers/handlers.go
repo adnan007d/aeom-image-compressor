@@ -100,7 +100,7 @@ func extractFormdata(form *multipart.Form) FormData {
 		}
 	}
 
-	if len(form.Value["format"]) > 0 && (form.Value["format"][0] == "webp" || form.Value["format"][0] == "jpeg" || form.Value["format"][0] == "png") {
+	if len(form.Value["format"]) > 0 && (form.Value["format"][0] == "webp" || form.Value["format"][0] == "jpg" || form.Value["format"][0] == "png") {
 		formData.format = form.Value["format"][0]
 	}
 
