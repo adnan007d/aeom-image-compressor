@@ -4,7 +4,9 @@ import (
 	"io/fs"
 	"log"
 	"mime/multipart"
+	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"sync"
 
@@ -35,8 +37,8 @@ func CompressImages(c *fiber.Ctx) error {
 	if err != nil {
 		log.Printf("Error while decoding multiplat form: %v", err)
 	}
-  
-  formData := extractFormdata(form)
+
+	formData := extractFormdata(form)
 
 	randomUUID := uuid.New().String()
 	var dir = "images/" + randomUUID
@@ -55,7 +57,7 @@ func CompressImages(c *fiber.Ctx) error {
 			CompressedImageOptions: util.CompressedImageOptions{
 				Quality:   formData.quality,
 				ImageType: formData.format,
-        Width: formData.width,
+				Width:     formData.width,
 			},
 		})
 
@@ -69,7 +71,7 @@ func CompressImages(c *fiber.Ctx) error {
 		images = append(images, channelValue)
 	}
 
-	component := views.CompressedImages(images)
+	component := views.CompressedImages(images, randomUUID)
 	return renderTempl(c, component)
 }
 
@@ -105,4 +107,26 @@ func extractFormdata(form *multipart.Form) FormData {
 	}
 
 	return formData
+}
+
+func CreateZip(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	targetPath := path.Join("images", id)
+	if _, err := os.Stat(path.Join("images", id)); err != nil {
+		return c.SendStatus(http.StatusNotFound)
+	}
+
+	targetFile := path.Join(targetPath, id+".zip")
+
+	compressedDir := path.Join(targetPath, "compressed")
+
+	err := util.ZipItAndShipIt(compressedDir, targetFile)
+
+	if err != nil {
+		log.Printf("Error while creating zip :%v", err)
+		return c.SendStatus(http.StatusInternalServerError)
+	}
+
+	return c.SendFile(targetFile)
 }

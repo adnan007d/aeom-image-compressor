@@ -1,10 +1,12 @@
 package util
 
 import (
+	"archive/zip"
 	"bytes"
 	"image"
 	"image/jpeg"
 	"image/png"
+	"path"
 
 	// "image/draw"
 	"io"
@@ -149,6 +151,49 @@ func ConvertToPng(w io.Writer, srcImage image.Image) error {
 	err := png.Encode(w, srcImage)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func ZipItAndShipIt(dir string, target string) error {
+
+	f, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	w := zip.NewWriter(f)
+	defer w.Close()
+
+	dirEntries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+
+	for _, dirEntry := range dirEntries {
+		if dirEntry.Type().IsRegular() {
+			f, err := w.Create(dirEntry.Name())
+			if err != nil {
+				return err
+			}
+			entryFIle, err := os.Open(path.Join(dir, dirEntry.Name()))
+			if err != nil {
+				return err
+			}
+			defer entryFIle.Close()
+
+			tempBuf, err := io.ReadAll(entryFIle)
+			if err != nil {
+				return err
+			}
+
+			_, err = f.Write(tempBuf)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return nil

@@ -14,4 +14,6 @@ func SetuRoutes(app *fiber.App) {
 
 	app.Post("/upload", handlers.CompressImages)
 
+	app.Get("/zip/:id", handlers.CreateZip)
+
 }

@@ -15,6 +15,7 @@ type CompressedImagesType struct {
 	Source ImageType
 	Dest   ImageType
 	Width  int
+	ZipId  string
 }
 
 func kbToMB(n int) string {
@@ -33,7 +34,8 @@ func kbToMB(n int) string {
 	return literal
 }
 
-templ CompressedImages(images []CompressedImagesType) {
+templ CompressedImages(images []CompressedImagesType, zipId string) {
+  <a class="px-4 py-2 bg-white rounded-lg text-black font-semibold w-full block text-center my-5" href={ templ.SafeURL("/zip/" + zipId) }>Zip It And Ship It</a>
 	for _, image := range images {
 		<two-up class="max-w-7xl w-max">
 			<div class="relative">
