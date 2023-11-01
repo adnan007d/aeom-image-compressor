@@ -2,7 +2,6 @@ package views
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type ImageType struct {
@@ -35,8 +34,8 @@ func kbToMB(n int) string {
 }
 
 templ CompressedImages(images []CompressedImagesType, zipId string) {
-  <a class="px-4 py-2 bg-white rounded-lg text-black font-semibold w-full block text-center my-5" href={ templ.SafeURL("/zip/" + zipId) }>Zip It And Ship It</a>
-	for _, image := range images {
+	<a class="px-4 py-2 bg-white rounded-lg text-black font-semibold w-full block text-center my-5" href={ templ.SafeURL("/zip/" + zipId) }>Zip It And Ship It</a>
+	/*	for _, image := range images {
 		<two-up class="max-w-7xl w-max">
 			<div class="relative">
 				<span class="absolute left-2 top-2">Original { kbToMB(image.Source.Size) } - { image.Source.Name }</span>
@@ -46,6 +45,19 @@ templ CompressedImages(images []CompressedImagesType, zipId string) {
 				<span class="absolute left-2 top-2">New { kbToMB(image.Dest.Size) } - { image.Dest.Name }</span>
 				<img width={ strconv.Itoa(image.Width) } src={ image.Dest.Src }/>
 			</div>
-		</two-up>
-	}
+		</two-up> 
+	} */
+	<div class="grid gap-5 md:grid-cols-2">
+		for _, image := range images {
+			<div class="border-white border-2 p-3 flex flex-col">
+				<img class="h-full w-full object-contain" src={ image.Dest.Src } loading="lazy"/>
+				<div class="mt-auto p-2 flex justify-between items-center">
+					<p>
+						{ kbToMB( image.Dest.Size) } saved <span class={ "text-green-500", templ.KV("text-red-500", image.Source.Size - image.Dest.Size < 0) }>{ kbToMB(image.Source.Size - image.Dest.Size) } </span>
+					</p>
+					<button type="submit" class="px-4 py-2 bg-white rounded-lg text-black font-semibold">Compare</button>
+				</div>
+			</div>
+		}
+	</div>
 }
