@@ -2,6 +2,7 @@ package views
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type ImageType struct {
@@ -48,16 +49,29 @@ templ CompressedImages(images []CompressedImagesType, zipId string) {
 		</two-up> 
 	} */
 	<div class="grid gap-5 md:grid-cols-2">
-		for _, image := range images {
-			<div class="border-white border-2 p-3 flex flex-col">
+		for i, image := range images {
+			<div class="border-white border-2 p-3 flex flex-col gap-3">
 				<img class="h-full w-full object-contain" src={ image.Dest.Src } loading="lazy"/>
-				<div class="mt-auto p-2 flex justify-between items-center">
+				<div class="mt-auto flex justify-between items-center">
 					<p>
 						{ kbToMB( image.Dest.Size) } saved <span class={ "text-green-500", templ.KV("text-red-500", image.Source.Size - image.Dest.Size < 0) }>{ kbToMB(image.Source.Size - image.Dest.Size) } </span>
 					</p>
-					<button type="submit" class="px-4 py-2 bg-white rounded-lg text-black font-semibold">Compare</button>
+					<button type="submit" class="modal-trigger px-4 py-2 bg-white rounded-lg text-black font-semibold" data-modal-target={ "modal-" + strconv.Itoa(i) }>Compare</button>
+					<div id={ "modal-" + strconv.Itoa(i) } class="fixed inset-[5%] bg-black border-2 z-[9999] border-white p-3" style="display: none;">
+						<header class="sticky top-0">
+							<button data-modal-target={ "modal-" + strconv.Itoa(i) } class="modal-close-button text-xl ml-auto block">X</button>
+						</header>
+						<div class="h-full">
+							<two-up class="h-[90%] relative mx-auto max-w-full w-max">
+								<img class="object-contain h-full mx-auto after:content-[&#39;Old&#39;]" width={ strconv.Itoa(image.Width) } src={ image.Source.Src }/>
+								<img class="object-contain h-full mx-auto" width={ strconv.Itoa(image.Width) } src={ image.Dest.Src }/>
+							</two-up>
+						</div>
+					</div>
 				</div>
 			</div>
 		}
+		<script src="/js/modal.js"></script>
 	</div>
+	<div id="modal-backdrop" class="fixed inset-0 bg-black/70 z-[69]" style="display: none;"></div>
 }
